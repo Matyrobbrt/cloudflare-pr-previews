@@ -115,8 +115,8 @@ public class CloudflarePRPreviews {
                 .autoInactive(false).create();
 
         final var ghPr = repo.getPullRequest(prNumber);
-        if (!ghPr.getBody().contains("Preview URL: ")) {
-            ghPr.setBody(ghPr.getBody() + "\n\n------------------\nPreview URL: " + deployment.aliases.get(0));
+        if (ghPr.getBody() == null || !ghPr.getBody().contains("Preview URL: ")) {
+            ghPr.setBody((ghPr.getBody() != null ? ghPr.getBody() + "\n" : "") + "\n------------------\nPreview URL: " + deployment.aliases.get(0));
         }
     }
 
