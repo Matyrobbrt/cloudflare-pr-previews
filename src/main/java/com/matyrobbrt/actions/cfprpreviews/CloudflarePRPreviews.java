@@ -87,7 +87,7 @@ public class CloudflarePRPreviews {
             // how?
             return;
         }
-        final var deployment = deployments.get(deployments.size() - 1);
+        final var deployment = deployments.get(0); // Last is most recent
         deployedCommit.createComment("""
 # Deploying with Cloudflare Pages
 
