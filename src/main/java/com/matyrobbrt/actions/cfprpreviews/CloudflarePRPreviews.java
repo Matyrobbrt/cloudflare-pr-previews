@@ -62,7 +62,7 @@ public class CloudflarePRPreviews {
         final String sha = pr.get("head").get("sha").asText();
         final var deployedCommit = repo.getCommit(sha);
 
-        final var ghDeployment = repo.createDeployment(pr.get("head").get("label").asText())
+        final var ghDeployment = repo.createDeployment(pr.get("head").get("ref").asText())
                 .autoMerge(false)
                 .description("Cloudflare Pages")
                 .productionEnvironment(false)
