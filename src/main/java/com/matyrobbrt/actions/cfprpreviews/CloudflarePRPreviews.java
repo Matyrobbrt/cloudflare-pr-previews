@@ -125,14 +125,18 @@ public class CloudflarePRPreviews {
             case PENDING, FAILURE -> ReactionContent.CONFUSED;
         };
 
-        for (GHReaction reaction : ghPr.listReactions()) {
-            if (reaction.getUser().getLogin().equals(selfUser)) {
-                if (reaction.getContent() == newReaction) {
-                    return;
-                } else {
-                    ghPr.deleteReaction(reaction);
+        try {
+            for (GHReaction reaction : ghPr.listReactions()) {
+                if (reaction.getUser().getLogin().equals(selfUser)) {
+                    if (reaction.getContent() == newReaction) {
+                        return;
+                    } else {
+                        ghPr.deleteReaction(reaction);
+                    }
                 }
             }
+        } catch (Exception ignored) { // If there's no reactions, it 404's
+
         }
         ghPr.createReaction(newReaction);
     }
