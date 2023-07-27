@@ -30,7 +30,7 @@ import java.util.zip.ZipInputStream;
 public class CloudflarePRPreviews {
     public static void main(String[] args) throws Exception {
         final GitHub api = buildApi();
-        final JsonNode run = payload();
+        final JsonNode run = payload().get("workflow_run");
         final long id = run.get("id").asLong();
 
         final GHArtifact[] artifacts = GitHubAccessor.getArtifacts(api, GitHubVars.REPOSITORY.get(), id);
