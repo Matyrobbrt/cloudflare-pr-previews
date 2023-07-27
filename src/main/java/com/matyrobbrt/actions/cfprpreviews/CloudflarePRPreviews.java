@@ -6,10 +6,13 @@ import com.matyrobbrt.actions.cfprpreviews.util.AuthUtil;
 import com.matyrobbrt.actions.cfprpreviews.util.GitHubVars;
 import org.kohsuke.github.GHArtifact;
 import org.kohsuke.github.GHDeploymentState;
+import org.kohsuke.github.GHPullRequest;
+import org.kohsuke.github.GHReaction;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubAccessor;
 import org.kohsuke.github.GitHubBuilder;
+import org.kohsuke.github.ReactionContent;
 import org.kohsuke.github.authorization.AuthorizationProvider;
 import org.kohsuke.github.function.InputStreamFunction;
 
@@ -24,6 +27,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.stream.StreamSupport;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -58,7 +62,7 @@ public class CloudflarePRPreviews {
         final String sha = pr.get("head").get("sha").asText();
         final var deployedCommit = repo.getCommit(sha);
 
-        final var ghDeployment = repo.createDeployment(GitHubVars.REF.get())
+        final var ghDeployment = repo.createDeployment(pr.get("head").get("label").asText())
                 .autoMerge(false)
                 .description("Cloudflare Pages")
                 .productionEnvironment(false)
@@ -88,7 +92,12 @@ public class CloudflarePRPreviews {
             return;
         }
         final var deployment = deployments.get(0); // Last is most recent
-        deployedCommit.createComment("""
+        final var status = deployment.getStatus();
+
+        ghDeployment.createStatus(status.state).logUrl("https://dash.cloudflare.com/" + System.getenv("CLOUDFLARE_ACCOUNT_ID") + "/pages/view/" + GitHubVars.PROJECT_NAME.get() + "/" + deployment.id)
+                .autoInactive(false).create();
+
+        final String message = """
 # Deploying with Cloudflare Pages
 
 | Name                    | Result |
@@ -96,43 +105,45 @@ public class CloudflarePRPreviews {
 | **Last commit:**        | [%s](%s) |
 | **Status**:             | %s |
 | **Preview URL**:        | %s |
-| **Branch Preview URL**: | %s |""".formatted(
-            sha, deployedCommit.getHtmlUrl(),
-            buildStatusMessage(deployment),
-            deployment.url,
-            deployment.aliases.get(0)
-        ));
+| **PR Preview URL**: | %s |""".formatted(
+                sha, deployedCommit.getHtmlUrl(),
+                status.message,
+                deployment.url,
+                deployment.aliases.get(0)
+        );
+        deployedCommit.createComment(message);
 
-        ghDeployment.createStatus(deployment.stages.stream()
-                .filter(s -> s.name.equals("deploy"))
-                .findFirst().map(s -> switch (s.status) {
-                    case "success" -> GHDeploymentState.SUCCESS;
-                    case "failure" -> GHDeploymentState.FAILURE;
-                    default -> GHDeploymentState.IN_PROGRESS;
-                })
-                .orElse(GHDeploymentState.IN_PROGRESS)
-        ).logUrl("https://dash.cloudflare.com/" + System.getenv("CLOUDFLARE_ACCOUNT_ID") + "/pages/view/" + GitHubVars.PROJECT_NAME.get() + "/" + deployment.id)
-                .autoInactive(false).create();
-
+        final var selfUser = api.getApp().getSlug() + "[bot]";
         final var ghPr = repo.getPullRequest(prNumber);
+        editOrPost(selfUser, ghPr, message);
         if (ghPr.getBody() == null || !ghPr.getBody().contains("Preview URL: ")) {
             ghPr.setBody((ghPr.getBody() != null ? ghPr.getBody() + "\n" : "") + "\n------------------\nPreview URL: " + deployment.aliases.get(0));
         }
+        final ReactionContent newReaction = switch (status) {
+            case SUCCESS -> ReactionContent.ROCKET;
+            case PENDING, FAILURE -> ReactionContent.CONFUSED;
+        };
+
+        for (GHReaction reaction : ghPr.listReactions()) {
+            if (reaction.getUser().getLogin().equals(selfUser)) {
+                if (reaction.getContent() == newReaction) {
+                    return;
+                } else {
+                    ghPr.deleteReaction(reaction);
+                }
+            }
+        }
+        ghPr.createReaction(newReaction);
     }
 
-    private static String buildStatusMessage(CFApi.Deployment deployment) {
-        final CFApi.Deployment.Stage stage = deployment.stages.stream()
-                .filter(s -> s.name.equals("deploy"))
-                .findFirst().orElse(null);
-        String status = "⚡️  Deployment in progress...";
-        if (stage == null) {
-            return status;
+    private static void editOrPost(String selfUser, GHPullRequest pr, String message) throws IOException {
+        for (org.kohsuke.github.GHIssueComment next : pr.listComments()) {
+            if (next.getUser().getLogin().equals(selfUser)) {
+                next.update(message);
+                return;
+            }
         }
-        return switch (stage.status) {
-            case "success" -> "✅  Deploy successful!";
-            case "failure" -> "\uD83D\uDEAB  Deployment failed";
-            default -> status;
-        };
+        pr.comment(message);
     }
 
     private static void createDirs(Path path) throws IOException {

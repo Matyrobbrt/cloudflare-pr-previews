@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.matyrobbrt.actions.cfprpreviews.util.DeploymentStatus;
 
 import java.io.IOException;
 import java.net.URI;
@@ -45,6 +46,18 @@ public class CFApi {
         public static class Stage {
             public String name;
             public String status;
+        }
+
+        public DeploymentStatus getStatus() {
+            return stages.stream()
+                    .filter(s -> s.name.equals("deploy"))
+                    .findFirst()
+                    .map(stage -> switch (stage.status) {
+                        case "success" -> DeploymentStatus.SUCCESS;
+                        case "failure" -> DeploymentStatus.FAILURE;
+                        default -> DeploymentStatus.PENDING;
+                    })
+                    .orElse(DeploymentStatus.PENDING);
         }
     }
 
