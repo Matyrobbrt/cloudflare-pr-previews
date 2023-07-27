@@ -7,6 +7,7 @@ import com.matyrobbrt.actions.cfprpreviews.util.GitHubVars;
 import org.kohsuke.github.GHApp;
 import org.kohsuke.github.GHArtifact;
 import org.kohsuke.github.GHDeploymentState;
+import org.kohsuke.github.GHFileNotFoundException;
 import org.kohsuke.github.GHPullRequest;
 import org.kohsuke.github.GHReaction;
 import org.kohsuke.github.GHRepository;
@@ -126,7 +127,7 @@ public class CloudflarePRPreviews {
         };
 
         try {
-            for (GHReaction reaction : ghPr.listReactions()) {
+            for (GHReaction reaction : GitHubAccessor.listReactions(api, ghPr)) {
                 if (reaction.getUser().getLogin().equals(selfUser)) {
                     if (reaction.getContent() == newReaction) {
                         return;
@@ -135,7 +136,7 @@ public class CloudflarePRPreviews {
                     }
                 }
             }
-        } catch (Exception ignored) { // If there's no reactions, it 404's
+        } catch (GHFileNotFoundException ignored) { // If there's no reactions, it 404's
 
         }
         ghPr.createReaction(newReaction);
