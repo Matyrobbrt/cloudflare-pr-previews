@@ -1,8 +1,8 @@
 # Container image that runs your code
 FROM ubuntu
 RUN apt-get update
-RUN apt -y install openjdk-17-jre
-RUN apt -y install nodejs npm
+RUN apt-get -y install openjdk-17-jre
+RUN apt-get -y install nodejs npm
 
 COPY dist/app.jar /app.jar
 
