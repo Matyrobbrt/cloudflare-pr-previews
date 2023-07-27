@@ -1,7 +1,8 @@
 package com.matyrobbrt.actions.cfprpreviews;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -14,7 +15,7 @@ import java.util.List;
 public class CFApi {
     private final HttpClient client;
     private final String apiToken, accountId;
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper().disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES);
 
     public CFApi(String apiToken, String accountId) {
         this.client = HttpClient.newBuilder()
@@ -33,18 +34,21 @@ public class CFApi {
                 .result;
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Deployment {
         public List<String> aliases;
         public String url;
         public List<Stage> stages;
         public String id;
 
+        @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Stage {
             public String name;
             public String status;
         }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class WithResult<T> {
         public T result;
     }
