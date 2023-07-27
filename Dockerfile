@@ -1,5 +1,6 @@
 # Container image that runs your code
 FROM ubuntu
+RUN apt-get update
 RUN apt install openjdk-17-jre
 RUN apt install nodejs npm
 
