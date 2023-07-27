@@ -62,7 +62,7 @@ public class AuthUtil {
         };
     }
 
-    private static String refreshJWT(String appId, PrivateKey privateKey) {
+    public static String refreshJWT(String appId, PrivateKey privateKey) {
         final Instant now = Instant.now();
         final Instant exp = now.plus(Duration.ofMinutes(10));
         final JwtBuilder builder = Jwts.builder()

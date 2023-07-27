@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matyrobbrt.actions.cfprpreviews.util.AuthUtil;
 import com.matyrobbrt.actions.cfprpreviews.util.GitHubVars;
+import org.kohsuke.github.GHApp;
 import org.kohsuke.github.GHArtifact;
 import org.kohsuke.github.GHDeploymentState;
 import org.kohsuke.github.GHPullRequest;
@@ -113,7 +114,7 @@ public class CloudflarePRPreviews {
         );
         deployedCommit.createComment(message);
 
-        final var selfUser = api.getApp().getSlug() + "[bot]";
+        final var selfUser = getSelfApp().getSlug() + "[bot]";
         final var ghPr = repo.getPullRequest(prNumber);
         editOrPost(selfUser, ghPr, message);
         if (ghPr.getBody() == null || !ghPr.getBody().contains("Preview URL: ")) {
@@ -173,6 +174,14 @@ public class CloudflarePRPreviews {
         return new GitHubBuilder()
                 .withAuthorizationProvider(authorizationProvider)
                 .build();
+    }
+
+    public static GHApp getSelfApp() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+        final PrivateKey key = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(AuthUtil.parsePKCS(GitHubVars.GH_APP_KEY.get())));
+        final String appId = GitHubVars.GH_APP_NAME.get();
+        return new GitHubBuilder()
+                .withJwtToken(AuthUtil.refreshJWT(appId, key))
+                .build().getApp();
     }
 
     private static JsonNode payload() throws IOException {
