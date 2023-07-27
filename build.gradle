@@ -1,0 +1,34 @@
+plugins {
+  id 'java'
+  id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  compileOnly 'org.jetbrains:annotations:23.1.0'
+  implementation('org.kohsuke:github-api:1.315') {
+    exclude module: 'snakeyaml'
+  }
+  implementation 'org.yaml:snakeyaml:2.0'
+  implementation 'org.bouncycastle:bcpkix-jdk15on:1.70'
+  implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.3'
+
+  implementation 'io.jsonwebtoken:jjwt-api:0.10.5'
+  implementation 'io.jsonwebtoken:jjwt-impl:0.10.5'
+  implementation 'io.jsonwebtoken:jjwt-jackson:0.10.5'
+}
+
+shadowJar {
+  manifest.attributes([
+          'Main-Class': 'com.matyrobbrt.actions.cfprpreviews.CloudflarePRPreviews'
+  ])
+  destinationDirectory = file('dist')
+  archiveFileName = 'app.jar'
+}
+
+tasks.named('compileJava', JavaCompile).configure {
+  options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+}
