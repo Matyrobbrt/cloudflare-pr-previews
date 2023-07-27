@@ -109,7 +109,7 @@ public class CloudflarePRPreviews {
                 sha, deployedCommit.getHtmlUrl(),
                 status.message,
                 deployment.url,
-                deployment.aliases.get(0)
+                deployment.aliases == null || deployment.aliases.isEmpty() ? deployment.url : deployment.aliases.get(0)
         );
         deployedCommit.createComment(message);
 
