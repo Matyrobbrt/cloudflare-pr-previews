@@ -21,7 +21,7 @@ jobs:
       - name: Run build with Gradle Wrapper
         run: ./gradlew :shadowJar :outputVersion
       - name: Set version
-        run: cat "version.txt" > $APP_VERSION
+        run: APP_VERSION=$(cat version.txt)
 
       - name: Checkout v1 release branch
         run: |
