@@ -111,6 +111,7 @@ public class CloudflarePRPreviews {
         var status = deployment.getStatus();
         if (status == DeploymentStatus.PENDING) {
             for (int i = 0; i < 3; i++) { // Retry 3 more times
+                System.out.println("Deployment status was PENDING... Retrying in 30 seconds.");
                 Thread.sleep(TimeUnit.SECONDS.toMillis(30));
                 deployments = cfApi.getDeployments(GitHubVars.PROJECT_NAME.get());
                 if (deployments.isEmpty()) {
