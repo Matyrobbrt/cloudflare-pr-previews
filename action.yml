@@ -10,4 +10,4 @@ inputs:
 
 runs:
   using: 'docker'
-  image: 'docker://ghcr.io/matyrobbrt/cloudflare-pr-previews:1.0.8'
+  image: 'docker://ghcr.io/matyrobbrt/cloudflare-pr-previews:1.0.9'

@@ -24,8 +24,12 @@ jobs:
         run: chmod +x ./gradlew
       - name: Run build with Gradle Wrapper
         run: ./gradlew :shadowJar :outputVersion
-      - name: Set version
-        run: APP_VERSION=$(cat version.txt)
+      - id: dotenv
+        uses: falti/dotenv-action@v1
+        with:
+          path: envs
+          export-variables: true
+          keys-case: lower
 
       - name: Checkout v1 release branch
         run: |
@@ -35,21 +39,21 @@ jobs:
           git symbolic-ref HEAD refs/remotes/origin/release/v1
           git reset
           git add .
-          git commit -m "Add release ${{ env.APP_VERSION }}"
+          git commit -m "Add release ${{ steps.dotenv.outputs.version }}"
           git push origin HEAD:release/v1
 
       - name: Create Tag
         uses: negz/create-tag@v1
         with:
-          version: ${{ env.APP_VERSION }}
-          message: Publish ${{ env.APP_VERSION }}
+          version: v${{ steps.dotenv.outputs.version }}
+          message: Publish ${{ steps.dotenv.outputs.version }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Tag
         uses: negz/create-tag@v1
         with:
           version: v1
-          message: Publish ${{ env.APP_VERSION }}
+          message: Publish ${{ steps.dotenv.outputs.version }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Login to GitHub Container Registry'
@@ -61,6 +65,6 @@ jobs:
 
       - name: 'Build Image'
         run: |
-          docker build . --tag ghcr.io/matyrobbrt/cloudflare-pr-previews:latest --tag ghcr.io/matyrobbrt/cloudflare-pr-previews:${{ env.APP_VERSION }}
+          docker build . --tag ghcr.io/matyrobbrt/cloudflare-pr-previews:latest --tag ghcr.io/matyrobbrt/cloudflare-pr-previews:${{ steps.dotenv.outputs.version }}
           docker push ghcr.io/matyrobbrt/cloudflare-pr-previews:latest
-          docker push ghcr.io/matyrobbrt/cloudflare-pr-previews:${{ env.APP_VERSION }}
+          docker push ghcr.io/matyrobbrt/cloudflare-pr-previews:${{ steps.dotenv.outputs.version }}
