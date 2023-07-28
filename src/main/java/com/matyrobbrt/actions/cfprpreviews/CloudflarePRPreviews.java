@@ -74,21 +74,29 @@ public class CloudflarePRPreviews {
                 .environment(GitHubVars.PROJECT_NAME.get() + " (Preview)")
                 .create();
 
+        final File logsFile = new File("wrangler_logs.txt");
+        System.out.println("\uD83D\uDEA7 Starting wrangler deployment... log file will be uploaded as `wrangler-logs` artifact with 3-day retention.");
         final int result = new ProcessBuilder()
                 .directory(new File("."))
-                .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+                .redirectOutput(logsFile)
                 .command("npx", "wrangler@3", "pages", "deploy", sitePath.toAbsolutePath().toString(),
                         "--project-name=\"" + GitHubVars.PROJECT_NAME.get() + "\"",
                         "--branch=\"pr-" + prNumber + "\"",
                         "--commit-hash=\"" + sha + "\"",
                         "--commit-message=\"Deploy from " + sha + "\"")
-                .redirectError(ProcessBuilder.Redirect.INHERIT)
+                .redirectError(logsFile)
                 .start()
                 .waitFor();
         if (result != 0) {
+            System.out.println("Wrangler logs:");
+            for (String line : Files.readString(logsFile.toPath()).split(System.lineSeparator())) {
+                System.out.println("\t" + line);
+            }
+
             deployedCommit.createComment("Failed to publish to Pages. Check Action logs for more details.");
-            return;
+            System.exit(1);
         }
+        System.out.println("\uD83D\uDE80 Deployment was successful!");
 
         final CFApi cfApi = new CFApi(System.getenv("CLOUDFLARE_API_TOKEN"), System.getenv("CLOUDFLARE_ACCOUNT_ID"));
         final var deployments = cfApi.getDeployments(GitHubVars.PROJECT_NAME.get());
@@ -96,12 +104,17 @@ public class CloudflarePRPreviews {
             // how?
             return;
         }
+
         final var deployment = deployments.get(0); // Last is most recent
         final var status = deployment.getStatus();
+
+        System.out.println("Deployment status: " + status);
+        System.out.println("Deployment link: " + deployment.url);
 
         ghDeployment.createStatus(status.state).logUrl("https://dash.cloudflare.com/" + System.getenv("CLOUDFLARE_ACCOUNT_ID") + "/pages/view/" + GitHubVars.PROJECT_NAME.get() + "/" + deployment.id)
                 .autoInactive(false).create();
 
+        System.out.println("Commenting with deployment links...");
         final String message = """
 # Deploying with Cloudflare Pages
 
@@ -129,6 +142,7 @@ public class CloudflarePRPreviews {
             case PENDING, FAILURE -> ReactionContent.CONFUSED;
         };
 
+        System.out.println("Reacting to PR...");
         for (GHReaction reaction : GitHubAccessor.listReactions(ghPr)) {
             if (reaction.getUser().getLogin().equals(selfUser)) {
                 if (reaction.getContent() == newReaction) {
