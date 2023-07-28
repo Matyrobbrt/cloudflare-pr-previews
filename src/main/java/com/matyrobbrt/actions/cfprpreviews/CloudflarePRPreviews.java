@@ -29,7 +29,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.stream.StreamSupport;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -37,6 +36,10 @@ public class CloudflarePRPreviews {
     public static void main(String[] args) throws Exception {
         final GitHub api = buildApi();
         final JsonNode run = payload().get("workflow_run");
+        if (!run.get("conclusion").asText().equals("success")) {
+            System.err.println("Target build workflow run failed! Check logs at " + run.get("html_url").asText());
+            System.exit(1);
+        }
         final long id = run.get("id").asLong();
 
         final GHArtifact[] artifacts = GitHubAccessor.getArtifacts(api, GitHubVars.REPOSITORY.get(), id);
