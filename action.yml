@@ -1,5 +1,5 @@
 name: 'cloudflare-pr-previews'
-description: 'An action used for securely uploading cloudflare PR previews to CF Pages'
+description: 'An action used for securely deploying cloudflare PR previews to CF Pages'
 inputs:
   gh_app_key:
     required: true

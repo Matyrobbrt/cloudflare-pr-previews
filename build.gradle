@@ -1,13 +1,13 @@
 plugins {
   id 'java'
-  id 'org.groovymc.simpleci' version '0.2.3'
+  id 'org.groovymc.simpleci' version '0.2.5'
   id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
 versioning {
   fromTag = '1.0'
 }
-version = versioning.calculatedVersion
+project.version = versioning.calculatedVersion
 
 repositories {
   mavenCentral()
