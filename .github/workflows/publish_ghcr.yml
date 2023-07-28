@@ -31,31 +31,6 @@ jobs:
           export-variables: true
           keys-case: lower
 
-      - name: Checkout v1 release branch
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "<>"
-          git fetch origin
-          git symbolic-ref HEAD refs/remotes/origin/release/v1
-          git reset
-          git add .
-          git commit -m "Add release ${{ steps.dotenv.outputs.version }}"
-          git push origin HEAD:release/v1
-
-      - name: Create Tag
-        uses: negz/create-tag@v1
-        with:
-          version: v${{ steps.dotenv.outputs.version }}
-          message: Publish ${{ steps.dotenv.outputs.version }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create Tag
-        uses: negz/create-tag@v1
-        with:
-          version: v1
-          message: Publish ${{ steps.dotenv.outputs.version }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: 'Login to GitHub Container Registry'
         uses: docker/login-action@v1
         with:
@@ -68,3 +43,28 @@ jobs:
           docker build . --tag ghcr.io/matyrobbrt/cloudflare-pr-previews:latest --tag ghcr.io/matyrobbrt/cloudflare-pr-previews:${{ steps.dotenv.outputs.version }}
           docker push ghcr.io/matyrobbrt/cloudflare-pr-previews:latest
           docker push ghcr.io/matyrobbrt/cloudflare-pr-previews:${{ steps.dotenv.outputs.version }}
+
+      - name: Checkout v1 release branch
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "<>"
+          git fetch origin
+          git symbolic-ref HEAD refs/remotes/origin/release/v1
+          git reset
+          git add .
+          git commit -m "Add release ${{ steps.dotenv.outputs.version }}"
+          git push origin HEAD:release/v1
+
+      - name: Checkout release branch
+        run: git checkout origin/release/v1
+      - name: Create Tag
+        uses: negz/create-tag@v1
+        with:
+          version: v${{ steps.dotenv.outputs.version }}
+          message: Publish ${{ steps.dotenv.outputs.version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create v1 tag
+        run: |
+          git tag -f v1
+          git push -f --tags
