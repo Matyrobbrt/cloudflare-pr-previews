@@ -6,6 +6,10 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   push-image:
     runs-on: ubuntu-latest
@@ -25,8 +29,8 @@ jobs:
 
       - name: Checkout v1 release branch
         run: |
-          git config user.name "GitHub Actions"
-          git config user.email "<>"
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "<>"
           git fetch origin
           git symbolic-ref HEAD refs/heads/release/v1
           git reset
