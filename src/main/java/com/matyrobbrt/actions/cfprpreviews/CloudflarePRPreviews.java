@@ -101,8 +101,8 @@ public class CloudflarePRPreviews {
         final CFApi cfApi = new CFApi(System.getenv("CLOUDFLARE_API_TOKEN"), System.getenv("CLOUDFLARE_ACCOUNT_ID"));
         final var deployments = cfApi.getDeployments(GitHubVars.PROJECT_NAME.get());
         if (deployments.isEmpty()) {
-            // how?
-            return;
+            System.err.println("CF API returned no deployments. This shouldn't be possible.");
+            System.exit(1);
         }
 
         final var deployment = deployments.get(0); // Last is most recent
