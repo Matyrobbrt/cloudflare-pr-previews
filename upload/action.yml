@@ -1,0 +1,20 @@
+name: 'cloudflare-pr-previews-upload'
+description: 'An action used for uploading CF pages website and payload as action artifact'
+inputs:
+  build-dir:
+    description: "The build directory to upload"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/upload-artifact@v3
+      name: Upload payload
+      with:
+        name: payload
+        path: ${{ github.event_path }}
+    - uses: actions/upload-artifact@v3
+      name: Upload site
+      with:
+        name: site
+        path: ${{ inputs.build-dir }}

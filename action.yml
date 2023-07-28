@@ -1,5 +1,5 @@
 name: 'cloudflare-pr-previews'
-description: 'An action used for securely uploading cloudflare PR previews to CF Pages'
+description: 'An action used for securely deploying cloudflare PR previews to CF Pages'
 inputs:
   gh_app_key:
     required: true
@@ -10,4 +10,4 @@ inputs:
 
 runs:
   using: 'docker'
-  image: 'docker://ghcr.io/matyrobbrt/cloudflare-pr-previews:1.0.12'
+  image: 'docker://ghcr.io/matyrobbrt/cloudflare-pr-previews:1.0.13'
