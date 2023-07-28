@@ -45,3 +45,9 @@ tasks.register('outputVersion') {
     file('action.yml').text = file('action.yml').text.replace('\'docker://ghcr.io/matyrobbrt/cloudflare-pr-previews\'', "'docker://ghcr.io/matyrobbrt/cloudflare-pr-previews:${project.version}'")
   }
 }
+
+java {
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(17))
+  }
+}
