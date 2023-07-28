@@ -1,7 +1,13 @@
 plugins {
   id 'java'
+  id 'org.groovymc.simpleci' version '0.2.3'
   id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
+
+versioning {
+  fromTag = '1.0'
+}
+version = versioning.calculatedVersion
 
 repositories {
   mavenCentral()
@@ -31,4 +37,17 @@ shadowJar {
 
 tasks.named('compileJava', JavaCompile).configure {
   options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+}
+
+tasks.register('outputVersion') {
+  doLast {
+    file('version.txt').text = project.version
+    file('action.yml').text = file('action.yml').text.replace('\'docker://ghcr.io/matyrobbrt/cloudflare-pr-previews\'', "'docker://ghcr.io/matyrobbrt/cloudflare-pr-previews:${project.version}'")
+  }
+}
+
+java {
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(17))
+  }
 }
