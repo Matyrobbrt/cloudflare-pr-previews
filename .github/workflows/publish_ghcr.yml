@@ -49,12 +49,10 @@ jobs:
           message: Publish ${{ steps.dotenv.outputs.version }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create Tag
-        uses: negz/create-tag@v1
-        with:
-          version: v1
-          message: Publish ${{ steps.dotenv.outputs.version }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create v1 tag
+        run: |
+          git tag -f v1
+          git push -f --tags
 
       - name: 'Login to GitHub Container Registry'
         uses: docker/login-action@v1
