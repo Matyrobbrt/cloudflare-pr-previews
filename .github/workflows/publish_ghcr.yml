@@ -57,14 +57,9 @@ jobs:
 
       - name: Checkout release branch
         run: git checkout origin/release/v1
-      - name: Create Tag
-        uses: negz/create-tag@v1
-        with:
-          version: v${{ steps.dotenv.outputs.version }}
-          message: Publish ${{ steps.dotenv.outputs.version }}
-          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create v1 tag
+      - name: Create tags
         run: |
+          git tag v${{ steps.dotenv.outputs.version }}
           git tag -f v1
           git push -f --tags
