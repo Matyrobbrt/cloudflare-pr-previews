@@ -27,11 +27,12 @@ jobs:
         run: |
           git config user.name "GitHub Actions"
           git config user.email "<>"
+          git fetch origin
           git symbolic-ref HEAD refs/heads/release/v1
           git reset
           git add .
           git commit -m "Add release ${{ env.APP_VERSION }}"
-          git push
+          git push --set-upstream origin release/v1
 
       - name: Create Tag
         uses: negz/create-tag@v1
