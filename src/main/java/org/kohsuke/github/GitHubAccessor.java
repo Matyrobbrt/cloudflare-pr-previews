@@ -19,12 +19,28 @@ public class GitHubAccessor {
                 });
     }
 
-    public static PagedIterable<GHReaction> listReactions(GitHub root, GHPullRequest pr) {
-        final var repo = pr.getRepository();
-        return root.createRequest()
+    public static PagedIterable<GHReaction> listReactions(GHPullRequest pr) {
+        return pr.owner.root().createRequest()
                 .withPreview(SQUIRREL_GIRL)
-                .withUrlPath("/repos/" + repo.getOwnerName() + "/" + repo.getName() + "/issues/" + pr.getNumber() + "/reactions")
+                .withUrlPath(pr.getIssuesApiRoute(), "reactions")
                 .toIterable(GHReaction[].class, null);
+    }
+
+    public static void deleteReaction(GHPullRequest pr, GHReaction reaction) throws IOException {
+        pr.owner.root()
+                .createRequest()
+                .method("DELETE")
+                .withUrlPath(pr.getIssuesApiRoute(), "reactions", String.valueOf(reaction.getId()))
+                .send();
+    }
+
+    public static GHReaction createReaction(GHPullRequest pr, ReactionContent content) throws IOException {
+        return pr.root().createRequest()
+                .method("POST")
+                .withPreview(SQUIRREL_GIRL)
+                .with("content", content.getContent())
+                .withUrlPath(pr.getIssuesApiRoute() + "/reactions")
+                .fetch(GHReaction.class);
     }
 
     public static ObjectReader objectReader(GitHub gitHub) {

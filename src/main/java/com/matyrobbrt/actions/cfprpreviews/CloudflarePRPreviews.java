@@ -64,7 +64,7 @@ public class CloudflarePRPreviews {
         final String sha = pr.get("head").get("sha").asText();
         final var deployedCommit = repo.getCommit(sha);
 
-        final var ghDeployment = repo.createDeployment(pr.get("head").get("ref").asText())
+        final var ghDeployment = repo.createDeployment("pull/" + prNumber + "/head")
                 .autoMerge(false)
                 .description("Cloudflare Pages")
                 .productionEnvironment(false)
@@ -126,20 +126,16 @@ public class CloudflarePRPreviews {
             case PENDING, FAILURE -> ReactionContent.CONFUSED;
         };
 
-        try {
-            for (GHReaction reaction : GitHubAccessor.listReactions(api, ghPr)) {
-                if (reaction.getUser().getLogin().equals(selfUser)) {
-                    if (reaction.getContent() == newReaction) {
-                        return;
-                    } else {
-                        ghPr.deleteReaction(reaction);
-                    }
+        for (GHReaction reaction : GitHubAccessor.listReactions(ghPr)) {
+            if (reaction.getUser().getLogin().equals(selfUser)) {
+                if (reaction.getContent() == newReaction) {
+                    return;
+                } else {
+                    GitHubAccessor.deleteReaction(ghPr, reaction);
                 }
             }
-        } catch (GHFileNotFoundException ignored) { // If there's no reactions, it 404's
-
         }
-        ghPr.createReaction(newReaction);
+        GitHubAccessor.createReaction(ghPr, newReaction);
     }
 
     private static void editOrPost(String selfUser, GHPullRequest pr, String message) throws IOException {
