@@ -3,6 +3,7 @@ package com.matyrobbrt.actions.cfprpreviews;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matyrobbrt.actions.cfprpreviews.util.AuthUtil;
+import com.matyrobbrt.actions.cfprpreviews.util.DeploymentStatus;
 import com.matyrobbrt.actions.cfprpreviews.util.GitHubVars;
 import org.kohsuke.github.GHApp;
 import org.kohsuke.github.GHArtifact;
@@ -29,6 +30,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -99,14 +101,30 @@ public class CloudflarePRPreviews {
         System.out.println("\uD83D\uDE80 Deployment was successful!");
 
         final CFApi cfApi = new CFApi(System.getenv("CLOUDFLARE_API_TOKEN"), System.getenv("CLOUDFLARE_ACCOUNT_ID"));
-        final var deployments = cfApi.getDeployments(GitHubVars.PROJECT_NAME.get());
+        var deployments = cfApi.getDeployments(GitHubVars.PROJECT_NAME.get());
         if (deployments.isEmpty()) {
             System.err.println("CF API returned no deployments. This shouldn't be possible.");
             System.exit(1);
         }
 
-        final var deployment = deployments.get(0); // Last is most recent
-        final var status = deployment.getStatus();
+        var deployment = deployments.get(0); // Last is most recent
+        var status = deployment.getStatus();
+        if (status == DeploymentStatus.PENDING) {
+            for (int i = 0; i < 3; i++) { // Retry 3 more times
+                Thread.sleep(TimeUnit.SECONDS.toMillis(30));
+                deployments = cfApi.getDeployments(GitHubVars.PROJECT_NAME.get());
+                if (deployments.isEmpty()) {
+                    System.err.println("CF API returned no deployments. This shouldn't be possible.");
+                    System.exit(1);
+                }
+                deployment = deployments.get(0); // Last is most recent
+                status = deployment.getStatus();
+
+                if (status != DeploymentStatus.PENDING) {
+                    break;
+                }
+            }
+        }
 
         System.out.println("Deployment status: " + status);
         System.out.println("Deployment link: " + deployment.url);
