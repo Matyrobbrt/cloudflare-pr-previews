@@ -36,7 +36,7 @@ jobs:
           git reset
           git add .
           git commit -m "Add release ${{ env.APP_VERSION }}"
-          git push
+          git push origin HEAD:release/v1
 
       - name: Create Tag
         uses: negz/create-tag@v1
