@@ -15,6 +15,7 @@ runs:
         path: ${{ github.event_path }}
     - uses: actions/upload-artifact@v3
       name: Upload site
+      if: always()
       with:
         name: site
         path: ${{ inputs.build-dir }}

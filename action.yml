@@ -9,5 +9,13 @@ inputs:
     required: true
 
 runs:
-  using: 'docker'
-  image: 'docker://ghcr.io/matyrobbrt/cloudflare-pr-previews:1.0.13'
+  using: "composite"
+  steps:
+    - name: Upload previews
+      uses: 'docker://ghcr.io/matyrobbrt/cloudflare-pr-previews:1.0.14'
+    - name: Upload logs
+      uses: actions/upload-artifact@v3
+      with:
+        name: wrangler-logs
+        path: wrangler_logs.txt
+        retention-days: 3
