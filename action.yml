@@ -12,13 +12,13 @@ runs:
   using: "composite"
   steps:
     - name: Upload previews
-      uses: 'docker://ghcr.io/matyrobbrt/cloudflare-pr-previews:1.0.19'
+      uses: 'docker://ghcr.io/matyrobbrt/cloudflare-pr-previews:1.0.20'
       with:
         gh_app_key: ${{ inputs.gh_app_key }}
         gh_app_name: ${{ inputs.gh_app_name }}
         project_name: ${{ inputs.project_name }}
     - name: Upload logs
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: wrangler-logs
         path: wrangler_logs.txt
