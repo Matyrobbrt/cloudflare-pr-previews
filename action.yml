@@ -18,7 +18,7 @@ runs:
         gh_app_name: ${{ inputs.gh_app_name }}
         project_name: ${{ inputs.project_name }}
     - name: Upload logs
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: wrangler-logs
         path: wrangler_logs.txt
