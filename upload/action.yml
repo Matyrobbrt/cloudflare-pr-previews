@@ -8,12 +8,12 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       name: Upload payload
       with:
         name: payload
         path: ${{ github.event_path }}
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       name: Upload site
       if: always()
       with:
