@@ -7,8 +7,6 @@ import com.matyrobbrt.actions.cfprpreviews.util.DeploymentStatus;
 import com.matyrobbrt.actions.cfprpreviews.util.GitHubVars;
 import org.kohsuke.github.GHApp;
 import org.kohsuke.github.GHArtifact;
-import org.kohsuke.github.GHDeploymentState;
-import org.kohsuke.github.GHFileNotFoundException;
 import org.kohsuke.github.GHPullRequest;
 import org.kohsuke.github.GHReaction;
 import org.kohsuke.github.GHRepository;
@@ -30,6 +28,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -74,6 +73,7 @@ public class CloudflarePRPreviews {
                 .description("Cloudflare Pages")
                 .productionEnvironment(false)
                 .environment(GitHubVars.PROJECT_NAME.get() + " (Preview)")
+                .requiredContexts(List.of())
                 .create();
 
         final File logsFile = new File("wrangler_logs.txt");
